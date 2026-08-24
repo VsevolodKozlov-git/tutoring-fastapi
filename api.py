@@ -58,11 +58,14 @@ class MovieData(BaseModel):
     title: str
     views: int
     
+class MovieDataWithId(MovieData):
+    id: int
+    
 movie_id_max = 3
 
 
 @app.post('/movie')
-async def post_movie(movie_data: MovieData):
+async def post_movie(movie_data: MovieData) -> MovieDataWithId:
     global movie_id_max
     movie_id_max += 1
     
