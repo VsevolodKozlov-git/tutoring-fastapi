@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated
@@ -8,14 +7,16 @@ import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel
 from pwdlib import PasswordHash
 
 _env_path = Path(__file__).resolve().parent.parent / '.env.main'
 load_dotenv(_env_path)
 
 
-@dataclass(frozen=True)
-class AuthConfig:
+class AuthConfig(BaseModel):
+    model_config = {'frozen': True}
+
     SECRET_KEY: str
     ALGORITHM: str
     EXP_DATE: int
