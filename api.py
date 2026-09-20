@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from model.user import User
+from model.user import user
 from schemas.user import LoginRequest, UserCreate, UserPublic
 from utils.auth import get_hashed_password, get_token, is_hashed_equal
 from utils.user import CurrentUser
@@ -87,11 +87,11 @@ async def post_movie(movie_data: MovieData) -> MovieDataWithId:
 
 @app.post('/register', status_code=201, summary='Регистрация пользователя')
 async def register(user_data: UserCreate) -> UserPublic:
-    if User.exists(user_data.username):
+    if user.exists(user_data.username):
         raise HTTPException(status_code=400, detail='Username already exists')
 
     password_hashed = get_hashed_password(user_data.password)
-    user = User.create(
+    user_created = user.create(
         username=user_data.username,
         password_hashed=password_hashed,
         first_name=user_data.first_name,
@@ -99,22 +99,22 @@ async def register(user_data: UserCreate) -> UserPublic:
     )
 
     return UserPublic(
-        username=user.username,
-        first_name=user.first_name,
-        second_name=user.second_name,
+        username=user_created.username,
+        first_name=user_created.first_name,
+        second_name=user_created.second_name,
     )
 
 
 @app.post('/login', summary='Авторизация пользователя')
 async def login(credentials: LoginRequest):
-    user = User.get_by_username(credentials.username)
-    if user is None:
+    user_data = user.get_by_username(credentials.username)
+    if user_data is None:
         raise HTTPException(status_code=401, detail='login or password is incorrect')
 
-    if not is_hashed_equal(credentials.password, user.password_hashed):
+    if not is_hashed_equal(credentials.password, user_data.password_hashed):
         raise HTTPException(status_code=401, detail='login or password is incorrect')
 
-    access_token = get_token({'username': user.username})
+    access_token = get_token({'sub': user_data.username})
 
     return {'access_token': access_token, 'token_type': 'Bearer'}
 

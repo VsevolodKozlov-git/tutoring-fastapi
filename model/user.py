@@ -2,22 +2,20 @@ from schemas.user import UserStored
 
 
 class User:
-    _users: list[dict] = []
+    def __init__(self) -> None:
+        self._users: list[dict] = []
 
-    @classmethod
-    def get_by_username(cls, username: str) -> UserStored | None:
-        for user in cls._users:
+    def get_by_username(self, username: str) -> UserStored | None:
+        for user in self._users:
             if user['username'] == username:
                 return UserStored.model_validate(user)
         return None
 
-    @classmethod
-    def exists(cls, username: str) -> bool:
-        return any(user['username'] == username for user in cls._users)
+    def exists(self, username: str) -> bool:
+        return any(user['username'] == username for user in self._users)
 
-    @classmethod
     def create(
-        cls,
+        self,
         username: str,
         password_hashed: str,
         first_name: str,
@@ -29,5 +27,8 @@ class User:
             'first_name': first_name,
             'second_name': second_name,
         }
-        cls._users.append(user)
+        self._users.append(user)
         return UserStored.model_validate(user)
+
+
+user = User()
