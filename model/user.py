@@ -30,5 +30,20 @@ class User:
         self._users.append(user)
         return UserStored.model_validate(user)
 
+    def update_names(
+        self,
+        username: str,
+        first_name: str | None = None,
+        second_name: str | None = None,
+    ) -> UserStored | None:
+        for user in self._users:
+            if user['username'] == username:
+                if first_name is not None:
+                    user['first_name'] = first_name
+                if second_name is not None:
+                    user['second_name'] = second_name
+                return UserStored.model_validate(user)
+        return None
+
 
 user = User()

@@ -24,3 +24,8 @@ class UserPublic(BaseModel):
     username: str
     first_name: str
     second_name: str
+
+
+class UserUpdate(BaseModel):
+    first_name: str | None = None
+    second_name: str | None = None

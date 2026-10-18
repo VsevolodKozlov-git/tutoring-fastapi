@@ -1,12 +1,26 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from model.user import user
-from schemas.user import LoginRequest, UserCreate, UserPublic
+from model.user import User, user
+from schemas.user import LoginRequest, UserCreate, UserPublic, UserUpdate
 from utils.auth import get_hashed_password, get_token, is_hashed_equal
 from utils.user import CurrentUser
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:8100",
+    "http://127.0.0.1:8100",  # на случай, если frontend обращается через 127.0.0.1
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,          # список разрешённых источников
+    allow_credentials=True,         # разрешить передачу cookies и заголовков авторизации
+    allow_methods=["*"],            # разрешить все HTTP-методы (GET, POST, PUT, DELETE и т.д.)
+    allow_headers=["*"],            # разрешить все заголовки
+)
 
 @app.get('/')
 async def home():
@@ -122,3 +136,20 @@ async def login(credentials: LoginRequest):
 @app.get('/profile', summary='Профиль текущего пользователя')
 async def get_profile(current_user: CurrentUser) -> UserPublic:
     return current_user
+
+
+@app.patch('/profile', summary='Обновление имени текущего пользователя')
+async def update_profile(current_user: CurrentUser, user_data: UserUpdate) -> UserPublic:
+    updated = user.update_names(
+        username=current_user.username,
+        first_name=user_data.first_name,
+        second_name=user_data.second_name,
+    )
+    if updated is None:
+        raise HTTPException(status_code=404, detail='User not found')
+
+    return UserPublic(
+        username=updated.username,
+        first_name=updated.first_name,
+        second_name=updated.second_name,
+    )
